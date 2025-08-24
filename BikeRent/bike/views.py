@@ -22,8 +22,21 @@ class BikeView(View):
                 {"error": "page и per_page должны быть числами"}, status=400
             )
 
-        # Получаем все велосипеды с связанной станцией
-        qs = Bike.objects.all().select_related('station').order_by("id")
+        # Получаем все велосипеды
+        qs = (
+            Bike.objects.all()
+            .values(
+                "id",
+                "name",
+                "brand",
+                "category",
+                "electricity",
+                "colour",
+                "available",
+                "station__name",
+            )
+            .order_by("id")
+        )
 
         paginator = Paginator(qs, per_page)
 
@@ -34,39 +47,15 @@ class BikeView(View):
         except EmptyPage:
             page_obj = paginator.page(paginator.num_pages)
 
-        bikes_list = []
-        for bike in page_obj.object_list:
-            bikes_list.append({
-                "id": bike.id,
-                "name": bike.name,
-                "brand": bike.get_brand_display(),  # Используем метод для отображения
-                "category": bike.get_category_display(),  # Используем метод для отображения
-                "electricity": bike.electricity,
-                "colour": bike.colour,  # Используем метод для отображения
-                "available": bike.available,
-                "station_name": bike.station.name if bike.station else None,
-            })
-
-        # Формируем структурированный ответ
-        response_data = {
-            "pagination": {
-                "current_page": page_obj.number,            # Текущий номер страницы (начинается с 1)
-                "total_pages": paginator.num_pages,         # Общее количество страниц
-                "total_items": paginator.count,             # Общее количество всех станций в базе
-                "per_page": per_page,                       # Количество станций на одной странице
-                "has_next": page_obj.has_next(),            # Есть ли следующая страница (true/false)
-                "has_previous": page_obj.has_previous(),    # Есть ли предыдущая страница (true/false)
-                "next_page_number":
-                    page_obj.next_page_number()
-                    if page_obj.has_next() else None,       # Номер следующей страницы или None
-                "previous_page_number":
-                    page_obj.previous_page_number()
-                    if page_obj.has_previous() else None,   # Номер предыдущей страницы или None
-            },
-                "bikes": bikes_list      # Список станций на текущей странице
+        data = {
+            "count": paginator.count,  # общее число объектов
+            "num_pages": paginator.num_pages,  # всего страниц
+            "page": page_obj.number,  # текущая страница
+            "per_page": per_page,  # размер страницы
+            "results": list(page_obj.object_list),
         }
 
-        return JsonResponse(response_data)
+        return JsonResponse(data, safe=False)
 
     def post(self, request: HttpRequest):
         """Создание нового велосипеда"""
@@ -80,30 +69,6 @@ class BikeView(View):
             if not data.get("station_id"):
                 return JsonResponse({"error": "Поле 'station_id' обязательно"}, status=400)
 
-            # Проверка категории
-            category = data.get("category")
-            if category == "other" and not data.get("custom_category"):
-                return JsonResponse(
-                    {"error": "При выборе 'Другое' необходимо указать custom_category"},
-                    status=400
-                )
-
-            # Проверка бренда
-            brand = data.get("brand")
-            if brand == "other" and not data.get("custom_brand"):
-                return JsonResponse(
-                    {"error": "При выборе 'Другая' необходимо указать custom_brand"},
-                    status=400
-                )
-
-            # Проверка цвета
-            colour = data.get("colour")
-            if colour == "other" and not data.get("custom_colour"):
-                return JsonResponse(
-                    {"error": "При выборе 'Другой' необходимо указать custom_colour"},
-                    status=400
-                )
-
             try:
                 station_id = int(data["station_id"])
                 station = Station.objects.get(id=station_id)
@@ -116,12 +81,9 @@ class BikeView(View):
             bike = Bike.objects.create(
                 name=data.get("name"),
                 brand=data["brand"],
-                custom_brand=data.get("custom_brand"),  # Добавлено
                 category=data.get("category"),
-                custom_category=data.get("custom_category"),  # Добавлено
                 electricity=data.get("electricity", False),
                 colour=data["colour"],
-                custom_colour=data.get("custom_colour"),  # Добавлено
                 available=data.get("available", True),
                 station=station,
                 comments=data.get("comments"),
@@ -173,10 +135,6 @@ class StationView(View):
                 "total_pages": paginator.num_pages,
                 "total_items": paginator.count,
                 "per_page": per_page,
-                "has_next": page_obj.has_next(),
-                "has_previous": page_obj.has_previous(),
-                "next_page_number": page_obj.next_page_number() if page_obj.has_next() else None,
-                "previous_page_number": page_obj.previous_page_number() if page_obj.has_previous() else None,
             },
             "stations": list(page_obj.object_list)
         }
@@ -212,20 +170,14 @@ def bike_to_dict(obj: Bike) -> dict:
     return {
         "id": obj.id,
         "category": obj.category,
-        "custom_category": obj.custom_category,
         "name": obj.name,
         "brand": obj.brand,
-        "custom_brand": obj.custom_brand,
         "electricity": obj.electricity,
         "colour": obj.colour,
-        "custom_colour": obj.custom_colour,
         "available": obj.available,
         "comments": obj.comments,
         "preview": obj.preview.url if obj.preview else None,
         "station": obj.station_id,
-        "display_category": obj.get_category_display(),  # Добавлено для удобства
-        "display_brand": obj.get_brand_display(),        # Добавлено для удобства
-        "display_colour": obj.get_colour_display(),      # Добавлено для удобства
     }
 
 
@@ -246,32 +198,15 @@ class BikeDetailView(View):
         except (json.JSONDecodeError, UnicodeDecodeError):
             return JsonResponse({"error": "Invalid JSON"}, status=400)
 
-        # Проверки для полей с выбором "Другое"
-        if "category" in data and data["category"] == "other" and not data.get("custom_category"):
-            return JsonResponse(
-                {"error": "При выборе 'Другое' необходимо указать custom_category"},
-                status=400
-            )
-
-        if "brand" in data and data["brand"] == "other" and not data.get("custom_brand"):
-            return JsonResponse(
-                {"error": "При выборе 'Другая' необходимо указать custom_brand"},
-                status=400
-            )
-
-        if "colour" in data and data["colour"] == "other" and not data.get("custom_colour"):
-            return JsonResponse(
-                {"error": "При выборе 'Другой' необходимо указать custom_colour"},
-                status=400
-            )
 
         # Устанавливаем поля, которые сможем изменить
         updatable_fields = [
-            "category", "custom_category",
+            "category",
             "name",
-            "brand", "custom_brand",
+            "brand",
             "electricity",
-            "colour", "custom_colour",
+            "colour",
+            "available",
             "comments",
         ]
 
