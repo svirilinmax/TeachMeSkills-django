@@ -1,7 +1,6 @@
-from django.contrib import admin
-from django.urls import path, include
-from django.http import HttpResponse
-from .views import BikeView, StationView, BikeDetailView
+from django.urls import path
+
+from .views import BikeDetailView, BikeView, StationView
 
 urlpatterns = [
     path("bikes/<int:pk>/", BikeDetailView.as_view(), name="bike-view"),

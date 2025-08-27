@@ -1,10 +1,8 @@
 from django.contrib import admin
-from django.urls import path, include
-from django.http import HttpResponse
-
+from django.urls import include, path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('bikes/', include('bike.urls')),  # Подключение URLs из приложения bike
-    path('rents/', include('rent.urls')),
+    path("admin/", admin.site.urls),
+    path("bikes/", include("bike.urls")),
+    path("rents/", include("rent.urls")),
 ]

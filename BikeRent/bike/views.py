@@ -9,8 +9,9 @@ from django.views.generic.base import View
 
 from .models import Bike, Station
 
+
 # Create your views here.
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class BikeView(View):
     def get(self, request: HttpRequest):
         """Список всех велосипедов с пагинацией через Paginator"""
@@ -67,15 +68,21 @@ class BikeView(View):
             if not data.get("colour"):
                 return JsonResponse({"error": "Поле 'colour' обязательно"}, status=400)
             if not data.get("station_id"):
-                return JsonResponse({"error": "Поле 'station_id' обязательно"}, status=400)
+                return JsonResponse(
+                    {"error": "Поле 'station_id' обязательно"}, status=400
+                )
 
             try:
                 station_id = int(data["station_id"])
                 station = Station.objects.get(id=station_id)
             except (ValueError, TypeError):
-                return JsonResponse({"error": "station_id должен быть числом"}, status=400)
+                return JsonResponse(
+                    {"error": "station_id должен быть числом"}, status=400
+                )
             except Station.DoesNotExist:
-                return JsonResponse({"error": f"Станция с id {station_id} не найдена"}, status=404)
+                return JsonResponse(
+                    {"error": f"Станция с id {station_id} не найдена"}, status=404
+                )
 
             # Создаем велосипед
             bike = Bike.objects.create(
@@ -90,9 +97,11 @@ class BikeView(View):
             )
 
             return JsonResponse(
-                {"id": bike.id,
-                "message": f"Bike {bike.name or bike.get_brand_display()} created"},
-                status=201
+                {
+                    "id": bike.id,
+                    "message": f"Bike {bike.name or bike.get_brand_display()} created",
+                },
+                status=201,
             )
 
         except json.JSONDecodeError:
@@ -101,7 +110,7 @@ class BikeView(View):
             return JsonResponse({"error": str(e)}, status=400)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class StationView(View):
     def get(self, request: HttpRequest):
         """Список всех станций"""
@@ -112,12 +121,7 @@ class StationView(View):
             return JsonResponse(
                 {"error": "page и per_page должны быть числами"}, status=400
             )
-        stations = (Station.objects.all().
-                values(
-                    "id",
-                    "name",
-                    "address",
-                    "capacity"))
+        stations = Station.objects.all().values("id", "name", "address", "capacity")
 
         paginator = Paginator(stations, per_page)
 
@@ -136,7 +140,7 @@ class StationView(View):
                 "total_items": paginator.count,
                 "per_page": per_page,
             },
-            "stations": list(page_obj.object_list)
+            "stations": list(page_obj.object_list),
         }
         return JsonResponse(response_data)
 
@@ -157,13 +161,14 @@ class StationView(View):
 
             return JsonResponse(
                 {"id": station.id, "message": f"Station {station.name} created"},
-                status=201
+                status=201,
             )
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Невалидный JSON"}, status=400)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
+
 
 def bike_to_dict(obj: Bike) -> dict:
     """Функция для преобразования объекта Bike в словарь"""
@@ -181,13 +186,12 @@ def bike_to_dict(obj: Bike) -> dict:
     }
 
 
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class BikeDetailView(View):
 
     def get(self, request: HttpRequest, pk: int) -> HttpResponse:
         bike = get_object_or_404(Bike, pk=pk)
         return JsonResponse(bike_to_dict(bike), status=200)
-
 
     def patch(self, request: HttpRequest, pk: int) -> HttpResponse:
         #  Получение объекта (велосипед по pk (primary key)) для изменения
@@ -197,7 +201,6 @@ class BikeDetailView(View):
             data = json.loads(request.body.decode("utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError):
             return JsonResponse({"error": "Invalid JSON"}, status=400)
-
 
         # Устанавливаем поля, которые сможем изменить
         updatable_fields = [
@@ -222,13 +225,14 @@ class BikeDetailView(View):
                 # Находит станцию по ID (или 404 если не существует)
                 station = get_object_or_404(Station, pk=station_id)
                 # Устанавливает связь велосипеда со станцией
-                setattr(bike, 'station', station)
+                setattr(bike, "station", station)
             except (ValueError, TypeError):
-                return JsonResponse({"error": "станция должна быть целым числом"}, status=400)
+                return JsonResponse(
+                    {"error": "станция должна быть целым числом"}, status=400
+                )
 
         bike.save()
         return JsonResponse(bike_to_dict(bike), status=200)
-
 
     def delete(self, request: HttpRequest, pk: int) -> HttpResponse:
         bike = get_object_or_404(Bike, pk=pk)
