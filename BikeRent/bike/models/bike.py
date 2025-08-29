@@ -4,6 +4,7 @@ from common.models import TimeStampedMixin
 
 User = get_user_model()
 
+
 class Bike(TimeStampedMixin, models.Model):
     class Category(models.TextChoices):
         ROAD = "road", "Шоссейный"
@@ -26,11 +27,8 @@ class Bike(TimeStampedMixin, models.Model):
         AUTHOR = "author", "Author"
 
     owner = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        related_name="bikes",
-        null=True,
-        blank=True)
+        User, on_delete=models.SET_NULL, related_name="bikes", null=True, blank=True
+    )
 
     category = models.CharField(
         max_length=20,
@@ -86,16 +84,3 @@ class Bike(TimeStampedMixin, models.Model):
         if not self.colour:
             return "Не указан"
         return self.Colour(self.colour).label
-
-
-# class RentBike(models.Model):
-#     users = models.ForeignKey(User, on_delete=models.CASCADE, related_name="rent_bikes")
-#     bike = models.ForeignKey("Bike", on_delete=models.CASCADE, related_name="rent")
-#
-#     start_rent = models.DateTimeField(null=False, blank=False)
-#     end_rent = models.DateTimeField(null=True, blank=True)
-#
-#     start_station = models.ForeignKey("bike.Station", on_delete=models.PROTECT, related_name="rent_station")
-#     end_station = models.ForeignKey("bike.Station", on_delete=models.PROTECT, related_name="rent_station")
-#
-#     price = models.IntegerField(default=0)

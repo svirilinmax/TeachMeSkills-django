@@ -6,9 +6,18 @@ from bike.models import Station, Bike
 class BikeInline(admin.StackedInline):
     model = Bike
     extra = 1
-    fields = ("name", "brand", "category",)
-    readonly_fields = ("name", "brand", "category",)
+    fields = (
+        "name",
+        "brand",
+        "category",
+    )
+    readonly_fields = (
+        "name",
+        "brand",
+        "category",
+    )
     max_num = 1
+
 
 @admin.register(Station)
 class StationAdmin(admin.ModelAdmin):

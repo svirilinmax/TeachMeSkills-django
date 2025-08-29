@@ -16,9 +16,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField("Фамилия", max_length=255, blank=True)
 
     # Required fields for Django Auth. For admin
-    is_active = models.BooleanField(default=True)       # Can the user log in
-    is_staff = models.BooleanField(default=False)       # Access to admin panel
-    is_superuser = models.BooleanField(default=False)   # All rights
+    is_active = models.BooleanField(default=True)  # Can the user log in
+    is_staff = models.BooleanField(default=False)  # Access to admin panel
+    is_superuser = models.BooleanField(default=False)  # All rights
 
     date_joined = models.DateTimeField(default=timezone.now)  # Date of registration
 
@@ -34,10 +34,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = "Пользователи"
         constraints = [
             models.UniqueConstraint(
-                Lower("email"), name="uniq_user_email_ci"   # Lowercase
+                Lower("email"), name="uniq_user_email_ci"  # Lowercase
             )
         ]
-        ordering = ("-date_joined",)    # sort by registration date descending (oldest to newest)
+        ordering = (
+            "-date_joined",
+        )  # sort by registration date descending (oldest to newest)
 
     def __str__(self):
         return self.email

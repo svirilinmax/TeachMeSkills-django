@@ -6,7 +6,15 @@ from bike.models import Bike
 # Регистрируем модель в админке
 @admin.register(Bike)
 class BikeAdmin(admin.ModelAdmin):
-    list_display = ("category", "name", "brand", "colour", "display_station", "available", "electricity")
+    list_display = (
+        "category",
+        "name",
+        "brand",
+        "colour",
+        "display_station",
+        "available",
+        "electricity",
+    )
     list_filter = (
         "name",
         "station",
@@ -29,4 +37,5 @@ class BikeAdmin(admin.ModelAdmin):
 
     def display_station(self, obj):
         return f"st. {obj.station.name}, {obj.station.address}"
+
     display_station.short_description = "Station"

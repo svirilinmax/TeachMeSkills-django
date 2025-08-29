@@ -4,7 +4,7 @@ from django.db import models
 class Station(models.Model):
     name = models.CharField(max_length=250, unique=True)
     address = models.CharField(max_length=250, blank=True, null=True)
-    capacity = models.PositiveSmallIntegerField (default=0)
+    capacity = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         verbose_name = "Station"

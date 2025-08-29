@@ -36,10 +36,14 @@ def reverse_func(apps, schema_editor):
     if station:
         Bike.objects.filter(brand="trek", station=station).delete()
     Station.objects.filter(name="Pyshkinskaya").delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
         ("bike", "0001_initial"),
     ]
 
-    operations = [migrations.RunPython(forwards_func, reverse_func),]
+    operations = [
+        migrations.RunPython(forwards_func, reverse_func),
+    ]

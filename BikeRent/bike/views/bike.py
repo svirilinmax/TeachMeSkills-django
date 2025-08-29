@@ -110,7 +110,6 @@ class BikeView(View):
             return JsonResponse({"error": str(e)}, status=400)
 
 
-
 def bike_to_dict(obj: Bike) -> dict:
     """Function to convert Bike object to dictionary"""
     return {
@@ -125,6 +124,7 @@ def bike_to_dict(obj: Bike) -> dict:
         "preview": obj.preview.url if obj.preview else None,
         "station": obj.station_id,
     }
+
 
 @method_decorator(csrf_exempt, name="dispatch")
 class BikeDetailView(View):
