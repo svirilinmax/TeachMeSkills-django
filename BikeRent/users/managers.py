@@ -10,30 +10,30 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError(_("Email must be set"))
 
-        # Приводим к нижнему регистру через normalize_email
+        # Convert to lower case via normalize_email
         email = self.normalize_email(email)
-        # Cоздаем объект пользователя
+        # Create a user object
         user = self.model(email=email, **extra_fields)
 
-        # Проверяем пароль
+        # Check the password
         if not password:
-            user.set_unusable_password()  # Создаём пользователя без пароля
+            user.set_unusable_password()  # Create a user without a password
         else:
-            user.set_password(password)  # Хэшируем и устанавливаем пароль
+            user.set_password(password)  # Hash and set the password
 
-        # Только сейчас сохраняем пользователя в базу данных
+        # Only now we save the user to the database
         user.save(using=self._db)
 
-    # Создаем обычного пользователя
+    # Create a regular user
     def create_user(self, email, password=None, **extra_fields):
-        # Устанавливаем значения по умолчанию
+        # Set default values
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
         return self._create_user(email, password, **extra_fields)
 
-    # Создаем суперпользователя
+    # Create a superuser
     def create_superuser(self, email, password=None, **extra_fields):
-        # Устанавливаем значения по умолчанию для админа
+        # Set default values for admin
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 

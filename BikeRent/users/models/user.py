@@ -15,18 +15,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField("Имя", max_length=255, blank=True)
     last_name = models.CharField("Фамилия", max_length=255, blank=True)
 
-    # Обязательные поля для Django Auth. Для админки
-    is_active = models.BooleanField(default=True)       # Может ли пользователь войти
-    is_staff = models.BooleanField(default=False)       # Доступ к админке
-    is_superuser = models.BooleanField(default=False)   # Все права
+    # Required fields for Django Auth. For admin
+    is_active = models.BooleanField(default=True)       # Can the user log in
+    is_staff = models.BooleanField(default=False)       # Access to admin panel
+    is_superuser = models.BooleanField(default=False)   # All rights
 
-    date_joined = models.DateTimeField(default=timezone.now)  # Дата регистрации
+    date_joined = models.DateTimeField(default=timezone.now)  # Date of registration
 
     objects = UserManager()
 
-    # использует имя User: логин по email
+    # uses name User: login by email
     USERNAME_FIELD = "email"
-    # Определяет, какие поля запрашивать (которые указал в []) при создании суперпользователя
+    # Determines which fields to request (specified in []) when creating a superuser
     REQUIRED_FIELDS = []
 
     class Meta:
@@ -34,10 +34,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = "Пользователи"
         constraints = [
             models.UniqueConstraint(
-                Lower("email"), name="uniq_user_email_ci"   # В нижней регистр
+                Lower("email"), name="uniq_user_email_ci"   # Lowercase
             )
         ]
-        ordering = ("-date_joined",)    # сортировка по дате убывания регистрации (от старого в новому)
+        ordering = ("-date_joined",)    # sort by registration date descending (oldest to newest)
 
     def __str__(self):
         return self.email

@@ -1,7 +1,10 @@
+from django.contrib.auth import get_user_model
 from django.db import models
+from common.models import TimeStampedMixin
 
+User = get_user_model()
 
-class Bike(models.Model):
+class Bike(TimeStampedMixin, models.Model):
     class Category(models.TextChoices):
         ROAD = "road", "Шоссейный"
         MTB = "mtb", "Горный"
@@ -21,6 +24,13 @@ class Bike(models.Model):
         SPECIALIZED = "specialized", "Specialized"
         CUBE = "cube", "Cube"
         AUTHOR = "author", "Author"
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="bikes",
+        null=True,
+        blank=True)
 
     category = models.CharField(
         max_length=20,
