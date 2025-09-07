@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/cinema.css' %}">
+
+<h1>Фильмы</h1>
+
+<form method="get" id="filterForm" class="filter-row">
+    <div class="filter-group">
+        <label for="search">Поиск</label>
+        <input type="text" id="search" name="q" value="{{ q }}" placeholder="Название">
+    </div>
+
+    <div class="filter-group">
+        <label for="genre">Жанр</label>
+        <select id="genre" name="genre">
+            <option value="">Все жанры</option>
+            {% for g in genres %}
+                <option value="{{ g.name }}" {% if active_genre == g.name %}selected{% endif %}>
+                    {{ g.get_name_display|default:g.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <label for="year">Год</label>
+        <input type="number" id="year" name="year" value="{{ active_year }}" placeholder="Год" min="1900" max="2100">
+    </div>
+
+    <div class="button-group">
+        <button type="submit">Применить</button>
+        <button type="reset" onclick="resetFilters()">Сбросить</button>
+    </div>
+</form>
+
+<script>
+function resetFilters() {
+    window.location.href = "{% url 'movie-list' %}";
+}
+</script>
+
+{% if movies %}
+<div class="sessions-grid">
+  {% for m in movies %}
+    <div class="movie-card">
+      <div class="movie-info">
+        <h3 class="movie-title">{{ m.name }} ({{ m.year }})</h3>
+        <div class="movie-details">
+          <p><strong>Жанры:</strong>
+            {% for g in m.genres.all %}
+              <span class="genre-tag">{{ g.get_name_display|default:g.name }}</span>
+            {% empty %}—{% endfor %}
+          </p>
+          <p><strong>Актёры:</strong> {% for a in m.actors.all %}{{ a.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</p>
+          <p><strong>Режиссёры:</strong> {% for d in m.directors.all %}{{ d.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</p>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="empty-state">
+    {% if is_filtered %}
+      <p>Ничего не найдено по выбранным фильтрам.</p>
+      <a href="{% url 'movie-list' %}" class="reset-btn">
+        Сбросить фильтры
+      </a>
+    {% else %}
+      <p>Фильмы не найдены.</p>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% if is_paginated %}
+<nav class="pagination">
+  {% if page_obj.has_previous %}
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if active_genre %}genre={{ active_genre }}&{% endif %}{% if active_year %}year={{ active_year }}&{% endif %}page={{ page_obj.previous_page_number }}">« Назад</a>
+  {% endif %}
+  <span>Стр. {{ page_obj.number }} из {{ paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if active_genre %}genre={{ active_genre }}&{% endif %}{% if active_year %}year={{ active_year }}&{% endif %}page={{ page_obj.next_page_number }}">Вперёд »</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}
