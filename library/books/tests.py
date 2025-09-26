@@ -1,16 +1,16 @@
-from django.urls import reverse
 from django.test import TestCase
-from rest_framework.test import APIClient
+from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APIClient
 
-from .models import Book, Author
+from .models import Author, Book
 
 
 class BookViewSetTests(TestCase):
     def setUp(self):
         self.client = APIClient
         self.b1_title = "Alpha"
-        self.b1 = Book.objects.create(title = self.b1_title)
+        self.b1 = Book.objects.create(title=self.b1_title)
         self.b2_title = "Beta"
         self.b2 = Book.objects.create(title=self.b2_title)
         self.b3_title = "Gamma"
@@ -40,7 +40,9 @@ class BookViewSetTests(TestCase):
         self.assertFalse(resp.json()["title"], self.b2_title)
 
     def test_partial_update_book(self):
-        resp = self.client.patch(self.detail_url(self.b3.id), data={"title": "G"}, format="json")
+        resp = self.client.patch(
+            self.detail_url(self.b3.id), data={"title": "G"}, format="json"
+        )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.b3.refresh_from_db()
         self.assertEqual(self.b3.title, "G")
@@ -60,7 +62,10 @@ class BookViewSetTests(TestCase):
         resp = self.client.get(self.list_url, {"ordering": "-title"})
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         titles = [x["title"] for x in resp.json()]
-        self.assertEqual(titles, sorted([self.b1.title, self.b2.title, self.b3.title], reverse=True))
+        self.assertEqual(
+            titles, sorted([self.b1.title, self.b2.title, self.b3.title], reverse=True)
+        )
+
 
 class AuthorViewSetTests(TestCase):
     def setUp(self):
@@ -85,5 +90,7 @@ class AuthorViewSetTests(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_author_not_allowed(self):
-        resp = self.client.post(self.list_url, data={"name": "Newton", "is_active": True}, format="json")
+        resp = self.client.post(
+            self.list_url, data={"name": "Newton", "is_active": True}, format="json"
+        )
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)

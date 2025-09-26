@@ -1,19 +1,25 @@
-from django.contrib import admin
-from django.urls import path, include
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,    # POST /api/token/        -> access + refresh
-    TokenRefreshView,       # POST /api/token/refresh -> новый access (и refresh если ROTATE)
-    TokenVerifyView,        # POST /api/token/verify  -> проверить access/refresh
-)
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+)  # POST /api/token/        -> access + refresh
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+)  # POST /api/token/refresh -> новый access (и refresh если ROTATE)
+from rest_framework_simplejwt.views import (
+    TokenVerifyView,
+)  # POST /api/token/verify  -> проверить access/refresh
 
-
-jwt_urlpatterns = ([
-    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-], "jwt")
+jwt_urlpatterns = (
+    [
+        path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+        path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+        path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),
+    ],
+    "jwt",
+)
 
 api_patterns = [
     path("", include("books.urls")),

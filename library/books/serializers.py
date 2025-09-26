@@ -1,11 +1,15 @@
 from rest_framework import serializers
-from .models import Book, Author
+
+from .models import Author, Book
+
 
 class AuthorShortSerializer(serializers.ModelSerializer):
     """Ускороченный сериализатор для автора (только основные поля)"""
+
     class Meta:
         model = Author
         fields = ["id", "name", "is_active"]
+
 
 class BookSerializer(serializers.ModelSerializer):
     author = AuthorShortSerializer(read_only=True)
@@ -25,7 +29,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     def get_is_owner(self, obj):
         """Добавляем поле, показывающее, является ли текущий пользователь владельцем"""
-        request = self.context.get('request')
+        request = self.context.get("request")
         if request and request.user.is_authenticated:
             return obj.user == request.user
         return False

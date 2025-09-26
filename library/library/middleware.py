@@ -1,10 +1,12 @@
 import datetime
-import time
 import logging
+import time
 from typing import Callable
+
 from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger(__name__)
+
 
 class FirstMiddleware:
     """
@@ -16,8 +18,10 @@ class FirstMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        print(f"Создан запрос в [{datetime.datetime.now()}]  "
-              f"🚀 Первый middleware: пришёл запрос {request.method} | {request.path_info}")
+        print(
+            f"Создан запрос в [{datetime.datetime.now()}]  "
+            f"🚀 Первый middleware: пришёл запрос {request.method} | {request.path_info}"
+        )
         response = self.get_response(request)
         return response
 
@@ -35,7 +39,9 @@ class LastMiddleware:
         request.foo = "I'm FOO"
 
         response = self.get_response(request)
-        print(f"Конец запроса в [{datetime.datetime.now()}]     Последний middleware: ответ сформирован")
+        print(
+            f"Конец запроса в [{datetime.datetime.now()}]     Последний middleware: ответ сформирован"
+        )
         response["X-From-Last-Middleware"] = "Yes, I'm the last! 🚀"
         return response
 
@@ -57,6 +63,11 @@ class RequestTimingMiddleware:
         print("After view")
         duration = time.perf_counter() - start
         response.headers["X-Process-Time"] = f"{duration:.4f}"
-        logger.info("HTTP %s %s -> %s in %.4fs",
-                    request.method, request.path_info, getattr(response, "status_code", "?"), duration)
+        logger.info(
+            "HTTP %s %s -> %s in %.4fs",
+            request.method,
+            request.path_info,
+            getattr(response, "status_code", "?"),
+            duration,
+        )
         return response

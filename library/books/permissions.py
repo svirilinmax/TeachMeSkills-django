@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class AuthorPermission(BasePermission):
@@ -16,7 +16,7 @@ class AuthorPermission(BasePermission):
         if request.method in SAFE_METHODS:
             return True
 
-        if hasattr(obj, 'user'):
+        if hasattr(obj, "user"):
             return obj.user == request.user
 
         return False
