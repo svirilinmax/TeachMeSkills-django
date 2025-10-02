@@ -1,9 +1,5 @@
-from django.contrib.auth import get_user_model
-from django.db import models
-
 from common.models import TimeStampedMixin
-
-User = get_user_model()
+from django.db import models
 
 
 class Training(TimeStampedMixin, models.Model):

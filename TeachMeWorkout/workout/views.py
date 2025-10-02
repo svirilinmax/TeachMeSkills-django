@@ -20,6 +20,7 @@ from .serializers import (
 from .tasks import fill_plan_from_parent
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class CoachViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -43,6 +44,12 @@ class TrainingPlanViewSet(
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = LargeResultsSetPagination
 
+    def _get_plan_author(self, request, original_plan):
+        """Определяет автора для нового плана"""
+        if request.user.is_authenticated:
+            return request.user
+        return original_plan.author
+
     def get_queryset(self):
         user = self.request.user
         queryset = TrainingPlan.objects.all()
@@ -60,10 +67,8 @@ class TrainingPlanViewSet(
     def duplication(self, request, pk):
         try:
             plan = self.get_object()
-            new_plan = TrainingPlan.objects.create(
-                author=request.user if request.user.is_authenticated else plan.author
-            )
-            logger = logging.getLogger(__name__)
+            author = self._get_plan_author(request, plan)
+            new_plan = TrainingPlan.objects.create(author=author)
 
             logger.info("Starting Celery")
             fill_plan_from_parent.apply_async(

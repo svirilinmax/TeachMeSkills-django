@@ -1,6 +1,5 @@
-from django.db import models
-
 from common.models import TimeStampedMixin
+from django.db import models
 
 from .exercise import Exercise
 from .trainingplan import TrainingPlan
