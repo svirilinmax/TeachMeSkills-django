@@ -21,12 +21,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    #drf
+    # drf
     "drf_yasg",
-    #libs
+    # libs
     "rest_framework",
     "rest_framework_simplejwt",
-    #apps
+    # apps
     "workout",
 ]
 

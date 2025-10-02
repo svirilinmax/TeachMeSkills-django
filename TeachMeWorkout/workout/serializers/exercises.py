@@ -1,17 +1,18 @@
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from workout.models import ExerciseToPlan, Exercise
+from rest_framework import serializers
+
+from workout.models import Exercise, ExerciseToPlan
 
 User = get_user_model()
 
 
 class PlansToExerciseSerializer(serializers.ModelSerializer):
-    plan_title = serializers.CharField(source='plan.title', read_only=True)
-    author = serializers.CharField(source='plan.author.username', read_only=True)
+    plan_title = serializers.CharField(source="plan.title", read_only=True)
+    author = serializers.CharField(source="plan.author.username", read_only=True)
 
     class Meta:
         model = ExerciseToPlan
-        fields = ['id', 'plan_title', 'author', 'amount']
+        fields = ["id", "plan_title", "author", "amount"]
 
 
 class ExerciseSerializer(serializers.ModelSerializer):
@@ -20,7 +21,9 @@ class ExerciseSerializer(serializers.ModelSerializer):
     def validate_title(self, value: str) -> str:
         result = Exercise.objects.filter(title__iexact=value).exists()
         if result:
-            raise serializers.ValidationError("Exercise with this title already exists (case-insensitive).")
+            raise serializers.ValidationError(
+                "Exercise with this title already exists (case-insensitive)."
+            )
         return value
 
     class Meta:

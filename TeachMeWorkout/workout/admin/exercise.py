@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.db.models import Count
-from .inlines import ExerciseToPlanInlineForExercise
-
 
 from workout.models import Exercise
+
+from .inlines import ExerciseToPlanInlineForExercise
 
 
 @admin.register(Exercise)

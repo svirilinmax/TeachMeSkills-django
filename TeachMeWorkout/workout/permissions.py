@@ -1,5 +1,6 @@
-from rest_framework import permissions
 from datetime import datetime
+
+from rest_framework import permissions
 
 
 class ExercisePermission(permissions.BasePermission):

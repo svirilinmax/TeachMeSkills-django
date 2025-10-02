@@ -1,10 +1,13 @@
 from django.contrib import admin
-from django.db.models import Sum
 from django.contrib.auth import get_user_model
-from .inlines import ExerciseToPlanInlineForPlan
+from django.db.models import Sum
+
 from workout.models import TrainingPlan
 
+from .inlines import ExerciseToPlanInlineForPlan
+
 User = get_user_model()
+
 
 @admin.register(TrainingPlan)
 class TrainingPlanAdmin(admin.ModelAdmin):
@@ -27,4 +30,3 @@ class TrainingPlanAdmin(admin.ModelAdmin):
     @admin.display(description="Всего повторений", ordering="_ex_total")
     def exercises_total(self, obj):
         return getattr(obj, "_ex_total", 0) or 0
-

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+
 from workout.models import Coach
 
 User = get_user_model()

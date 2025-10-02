@@ -1,6 +1,7 @@
 from celery import shared_task
 from django.db import transaction
-from ..models import TrainingPlan, ExerciseToPlan
+
+from ..models import ExerciseToPlan, TrainingPlan
 
 
 @shared_task(bind=True, retry_backoff=True, retry_kwargs={"max_retries": 5})
@@ -32,5 +33,5 @@ def fill_plan_from_parent(self, new_plan_id: int, parent_plan_id: int) -> int:
         return created_count
 
     except Exception as exc:
-        delay = 2 * (2 ** self.request.retries)
+        delay = 2 * (2**self.request.retries)
         raise self.retry(exc=exc, countdown=delay, max_retries=5)

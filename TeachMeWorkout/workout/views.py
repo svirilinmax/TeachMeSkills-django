@@ -1,23 +1,23 @@
 import logging
+
+from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.contrib.auth import get_user_model
-from rest_framework import permissions
-from rest_framework import status, mixins, viewsets
-from .models import Exercise, TrainingPlan, Coach
-from django.db.models import Q
+from rest_framework import mixins, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from .models import Coach, Exercise, TrainingPlan
+from .pagination import LargeResultsSetPagination, StandardResultsSetPagination
+from .permissions import ExercisePermission
 from .serializers import (
     CoachSerializer,
-    ExerciseSerializer,
     ExerciseOnlyTitleSerializer,
-    TrainingPlanSerializer
+    ExerciseSerializer,
+    TrainingPlanSerializer,
 )
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from .permissions import ExercisePermission
 from .tasks import fill_plan_from_parent
-from .pagination import LargeResultsSetPagination, StandardResultsSetPagination
-
 
 User = get_user_model()
 
@@ -32,11 +32,12 @@ class CoachViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+
 class TrainingPlanViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     serializer_class = TrainingPlanSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -47,9 +48,7 @@ class TrainingPlanViewSet(
         queryset = TrainingPlan.objects.all()
 
         if user.is_authenticated:
-            queryset = queryset.filter(
-                Q(author=user) | Q(author__coach__isnull=False)
-            )
+            queryset = queryset.filter(Q(author=user) | Q(author__coach__isnull=False))
         else:
             queryset = queryset.filter(author__coach__isnull=False)
 
@@ -61,9 +60,10 @@ class TrainingPlanViewSet(
     def duplication(self, request, pk):
         try:
             plan = self.get_object()
-            new_plan = TrainingPlan.objects.create(author=request.user if request.user.is_authenticated else plan.author)
+            new_plan = TrainingPlan.objects.create(
+                author=request.user if request.user.is_authenticated else plan.author
+            )
             logger = logging.getLogger(__name__)
-
 
             logger.info("Starting Celery")
             fill_plan_from_parent.apply_async(
@@ -71,10 +71,9 @@ class TrainingPlanViewSet(
                     "new_plan_id": new_plan.id,
                     "parent_plan_id": plan.id,
                 },
-                countdown=5
+                countdown=5,
             )
             logger.info("Finishing Celery")
-
 
             serializer = self.get_serializer(new_plan)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -82,7 +81,8 @@ class TrainingPlanViewSet(
         except Exception as e:
             return Response(
                 {"error": "Failed to duplicate plan"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @method_decorator(cache_page(60 * 5))
     def list(self, request, *args, **kwargs):
@@ -93,7 +93,7 @@ class ExerciseViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     queryset = Exercise.objects.all().prefetch_related("plan")
     serializer_class = ExerciseSerializer
@@ -112,7 +112,6 @@ class ExerciseViewSet(
 
         return perms
 
-
     @action(detail=True, methods=["post"], url_path="duplicate")
     # exercises/<ID>/duplicate/
     def duplicate_exercise_with_prefix(self, request, pk=None):
@@ -124,7 +123,7 @@ class ExerciseViewSet(
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["get"], url_path="list-titles")
-    @method_decorator(cache_page(60*15))
+    @method_decorator(cache_page(60 * 15))
     # exercises/list_titles
     def list_titles(self, request):
         instances = self.get_queryset()

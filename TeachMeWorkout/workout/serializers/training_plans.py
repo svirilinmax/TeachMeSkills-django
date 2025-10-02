@@ -1,8 +1,10 @@
 from rest_framework import serializers
-from .users import UserNestedSerializer
+
+from workout.models import TrainingPlan
+
 from .exercises import ExercisePlanNestedSerializer
 from .trainings import TrainingSerializer
-from workout.models import TrainingPlan
+from .users import UserNestedSerializer
 
 
 class TrainingPlanSerializer(serializers.ModelSerializer):

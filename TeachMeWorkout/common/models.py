@@ -4,15 +4,15 @@ from django.db import models
 
 
 class BaseTimeStampedMixin:
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
 
     class Meta:
         abstract = True
 
 
 class TimeStampedMixin(BaseTimeStampedMixin):
-    deleted_at = models.DateTimeField(blank=True, null=True, verbose_name='Удалено')
+    deleted_at = models.DateTimeField(blank=True, null=True, verbose_name="Удалено")
 
     class Meta:
         abstract = True

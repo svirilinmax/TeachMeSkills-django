@@ -1,12 +1,12 @@
-from .users import UserNestedSerializer, CoachSerializer
 from .exercises import (
-    PlansToExerciseSerializer,
-    ExerciseSerializer,
     ExerciseOnlyTitleSerializer,
-    ExercisePlanNestedSerializer
+    ExercisePlanNestedSerializer,
+    ExerciseSerializer,
+    PlansToExerciseSerializer,
 )
 from .training_plans import TrainingPlanSerializer
 from .trainings import TrainingSerializer
+from .users import CoachSerializer, UserNestedSerializer
 
 __all__ = [
     "UserNestedSerializer",
