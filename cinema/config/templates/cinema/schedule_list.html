@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Расписание{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/cinema.css' %}">
+
+<form method="get" id="filterForm">
+    <div class="filter-row">
+        <div class="filter-group">
+            <label for="search">Поиск</label>
+            <input type="text" id="search" name="q" value="{{ form.q.value|default:'' }}" placeholder="Название">
+        </div>
+
+        <div class="filter-group">
+            <label for="genre">Жанр</label>
+            <select id="genre" name="genre">
+                <option value="">Все</option>
+                {% for genre in genres %}
+                    <option value="{{ genre.name }}" {% if form.genre.value == genre.name %}selected{% endif %}>
+                        {{ genre.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="date_from">Дата от</label>
+            <input type="date" id="date_from" name="date_from" value="{{ form.date_from.value|default:'' }}">
+            {% if form.date_from.errors %}
+                <div class="error">{{ form.date_from.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="filter-group">
+            <label for="date_to">Дата до</label>
+            <input type="date" id="date_to" name="date_to" value="{{ form.date_to.value|default:'' }}">
+            {% if form.date_to.errors %}
+                <div class="error">{{ form.date_to.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="filter-group">
+            <label for="price_min">Цена от</label>
+            <input type="number" id="price_min" name="price_min" value="{{ form.price_min.value|default:'' }}"
+                   placeholder="0" step="0.01" min="0" style="width: 80px;">
+        </div>
+
+        <div class="filter-group">
+            <label for="price_max">Цена до</label>
+            <input type="number" id="price_max" name="price_max" value="{{ form.price_max.value|default:'' }}"
+                   placeholder="0" step="0.01" min="0" style="width: 80px;">
+        </div>
+
+        <div class="button-group">
+            <button type="submit">Применить</button>
+            <button type="reset" onclick="resetFilters()">Сбросить</button>
+        </div>
+    </div>
+</form>
+
+<script>
+function resetFilters() {
+    window.location.href = "{% url 'schedule-list' %}";
+}
+</script>
+
+{% if form.non_field_errors %}
+    <div class="non-field-errors">
+        {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if sessions %}
+<div class="sessions-grid">
+  {% for s in sessions %}
+    <div class="movie-card">
+      <div class="movie-info">
+        <h3 class="movie-title">{{ s.movie.name }} ({{ s.movie.year }})</h3>
+        <p class="movie-time">Начало: {{ s.movie_start|date:"Y-m-d H:i" }}</p>
+        <p class="movie-price">{{ s.price }} ₽</p>
+        <div class="movie-genres">
+          {% for g in s.movie.genres.all %}
+            <span class="genre-tag">{{ g.get_name_display|default:g.name }}</span>
+          {% empty %}
+            <span class="genre-tag">—</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="empty-state">
+    {% if is_filtered %}
+      <p>Ничего не найдено по выбранным фильтрам.</p>
+      <a href="{% url 'schedule-list' %}" class="reset-btn">
+        Сбросить фильтры
+      </a>
+    {% else %}
+      <p>Нет доступных сеансов.</p>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% if is_paginated %}
+<nav class="pagination">
+  {% if page_obj.has_previous %}
+    <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">« Назад</a>
+  {% endif %}
+  <span>Стр. {{ page_obj.number }} из {{ paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Вперёд »</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

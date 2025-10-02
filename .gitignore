@@ -60,7 +60,11 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-
+media/
+static/
+conftest.py
+pytest_schedule_list.py
+unittest_schedule_list.py
 # Flask stuff:
 instance/
 .webassets-cache
